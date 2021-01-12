@@ -1,0 +1,45 @@
+#!/bin/bash
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+. /lib/lsb/init-functions
+
+case $1 in
+
+        start)
+		# Stop before we start
+                /fortipoc/fortipoc-run stop
+		sleep 1
+
+		# remove curl-loader logfiles to protect disk 
+		rm -rf /tmp/100_*
+
+		log_daemon_msg "Starting fortipoc-run1" "lab1"
+
+		# Run curl-loader for ever
+		bash -c "cd /tmp  && nohup /fortipoc/curl-loader -f /fortipoc/curl-loader-lab1.conf > /dev/null " --killme &
+
+		# Run office365 wget loop
+		# --running-lab Lab1 is here to identify that fortipoc-run1 is running
+		bash -c "cd /tmp && nohup /fortipoc/loop_office365.sh > /dev/null --killme" --killme --running-lab Lab1 &
+		
+		log_end_msg $?
+		;;
+
+	stop)
+		log_daemon_msg "Stopping fortipoc-run" "lab1"
+		kill `ps -ef | grep 'killme' | grep -v grep | awk '// { print $2}'`
+		killall /fortipoc/curl-loader
+		killall wget
+		echo
+		log_end_msg $?
+		;;
+
+        restart|force-reload)
+                $0 stop && sleep 2 && $0 start
+                ;;
+
+        *)
+                echo "Usage: $0 {start|stop|restart}"
+                exit 2
+                ;;
+esac

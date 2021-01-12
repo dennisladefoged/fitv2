@@ -1,0 +1,32 @@
+#!/bin/bash
+
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+. /lib/lsb/init-functions
+
+case $1 in
+
+        start)
+		log_daemon_msg "Starting fortipoc-run" ""
+		log_end_msg $?
+		;;
+
+	stop)
+		log_daemon_msg "Stopping fortipoc-run" ""
+                /fortipoc/fortipoc-run1 stop
+                /fortipoc/fortipoc-run2 stop
+                /fortipoc/fortipoc-run3 stop
+                /fortipoc/fortipoc-run4 stop
+                /fortipoc/fortipoc-run5 stop
+		echo done
+		log_end_msg $?
+		;;
+
+        restart|force-reload)
+                $0 stop && sleep 2 && $0 start
+                ;;
+
+        *)
+                echo "Usage: $0 {start|stop|restart}"
+                exit 2
+                ;;
+esac
